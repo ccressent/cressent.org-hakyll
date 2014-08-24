@@ -68,6 +68,6 @@ articleCtx =
 config :: Configuration
 config = defaultConfiguration
     { providerDirectory = "src/"
-    , ignoreFile        = \_ -> False
+    , ignoreFile        = const False
     , deployCommand     = "echo 'No deploy command specified' && exit 1"
     }
