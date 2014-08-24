@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Monoid (mappend)
+import Data.Monoid ((<>))
 import Hakyll
 
 
@@ -40,9 +40,9 @@ main = hakyllWith config $ do
         compile $ do
             articles <- recentFirst =<< loadAll "articles/*"
             let context =
-                    listField "articles" articleCtx (return articles) `mappend`
-                    constField "title" "Articles"                     `mappend`
-                    defaultContext
+                    listField "articles" articleCtx (return articles)
+                 <> constField "title" "Articles"
+                 <> defaultContext
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/article-list.html" context
@@ -61,8 +61,8 @@ staticFiles = [ ".htaccess"
 
 articleCtx :: Context String
 articleCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+    dateField "date" "%B %e, %Y"
+ <> defaultContext
 
 
 config :: Configuration
