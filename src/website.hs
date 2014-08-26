@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad (liftM)
 import Data.Monoid ((<>))
 import Hakyll
 
@@ -15,6 +16,12 @@ main = hakyllWith config $ do
     match "styles/*.css" $ do
         route   idRoute
         compile compressCssCompiler
+
+    match "styles/*.scss" $ do
+        route   $ setExtension "css"
+        compile $ liftM (fmap compressCss) $
+            getResourceString
+            >>= withItemBody (unixFilter "sass" ["-s", "--scss"])
 
     match "about.md" $ do
         route   $ setExtension ".html"
