@@ -1,4 +1,5 @@
 .cabal-sandbox/
+.sass-cache/
 _cache/
 _site/
 dist/
