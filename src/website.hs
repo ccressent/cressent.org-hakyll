@@ -13,15 +13,16 @@ main = hakyllWith config $ do
         route   idRoute
         compile copyFileCompiler
 
-    match "styles/**" $
+    match "styles/*" $
         compile $ liftM (fmap compressCss) $
-            getResourceString
-            >>= withItemBody (unixFilter "sass" ["-s", "--scss"])
+            getResourceFilePath
+            >>= \fp -> unixFilter "sass" ["--scss", fp] ""
+            >>= makeItem
 
     create ["styles.css"] $ do
         route idRoute
         compile $ do
-            items <- loadAll "styles/**"
+            items <- loadAll "styles/*"
             makeItem $ concatMap itemBody (items :: [Item String])
 
     match "about.md" $ do
