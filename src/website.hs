@@ -31,9 +31,9 @@ main = hakyllWith config $ do
             >>= loadAndApplyTemplate "templates/main.html" defaultContext
             >>= relativizeUrls
 
-    match "home.md" $ do
-        route   $ setExtension ".html"
-        compile $ pandocCompiler
+    match "home.html" $ do
+        route idRoute
+        compile $ getResourceBody
             >>= loadAndApplyTemplate "templates/main.html" defaultContext
             >>= relativizeUrls
 
