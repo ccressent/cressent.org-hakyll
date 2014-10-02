@@ -13,6 +13,14 @@ main = hakyllWith config $ do
         route   idRoute
         compile copyFileCompiler
 
+    match "images/*" $ do
+        route   idRoute
+        compile copyFileCompiler
+
+    match "fonts/*" $ do
+        route   idRoute
+        compile copyFileCompiler
+
     match "styles/*" $
         compile $ liftM (fmap compressCss) $
             getResourceFilePath
@@ -62,8 +70,6 @@ main = hakyllWith config $ do
 staticFiles :: [Identifier]
 staticFiles = [ ".htaccess"
               , "404.html"
-              , "fonts/*"
-              , "images/*"
               , "favicon.ico"
               ]
 
