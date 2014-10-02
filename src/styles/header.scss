@@ -73,7 +73,9 @@ header.navigation {
     z-index: 9999999;
     float: none;
     @include media ($horizontal-bar-mode) {
-      float: left;
+      width: 100%;
+      margin: 0 auto;
+      text-align: center;
     }
   }
 
