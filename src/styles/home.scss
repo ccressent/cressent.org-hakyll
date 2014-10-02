@@ -4,11 +4,16 @@
 @import "base/base";
 @import "neat/neat";
 
+.portrait {
+  height: 200px;
+  margin-bottom: 1em;
+}
+
 .intro {
   $intro-text-width: 50%;
 
   margin-bottom: 5em;
-  margin-top: 4em;
+  margin-top: 1.5em;
   text-align: center;
 
   h2 {
