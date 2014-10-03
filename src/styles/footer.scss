@@ -4,82 +4,25 @@
 @import "base/base";
 @import "neat/neat";
 
-.footer {
+footer {
   $footer-height: 40px;
   $footer-background: $dark-gray;
-  $footer-color: white;
-  $footer-link-color: transparentize($footer-color, .6);
 
-  background: $footer-background;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: $footer-height;
   width: 100%;
-  //line-height: $footer-height;
+  margin-bottom: 1em;
 
-  ul {
-    margin-bottom: 1em;
-
-    @include media($large-screen) {
-      float: left;
-      margin-left: 1em;
-      margin-bottom: 0;
-    }
-  }
+  background-color: $footer-background;
 
   ul li {
-    padding-right: 1em;
-    font-weight: bold;
-
-    @include media($large-screen) {
-      display: inline;
-      text-align: left;
-    }
+    display: inline;
   }
 
-  ul li a {
-    color: $footer-link-color;
-
-    &:hover {
-      color: transparentize($footer-color, 0);
-    }
-  }
-
-  .footer-secondary-links {
-    @include media($large-screen) {
-      float: right;
-    }
-
-    li {
-      font-size: .8em;
-    }
-
-    ul.footer-social {
-      margin-top: 1em;
-
-      @include media($large-screen) {
-        float: right;
-        margin-top: 0;
-      }
-
-      li {
-        float: left;
-        font-size: 1em;
-        padding-top: .4em;
-        padding-right: .7em;
-
-        &:last-child {
-          padding-right: 0;
-        }
-      }
-
-      img {
-        opacity: .7;
-        height: 1.6em;
-        padding: 1px;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-    }
+  img {
+    height: 100%;
+    margin: 0 0.3em;
   }
 }
