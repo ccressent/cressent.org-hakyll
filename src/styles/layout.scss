@@ -1,0 +1,12 @@
+@charset "UTF-8";
+
+@import "bourbon/bourbon";
+@import "base/base";
+@import "neat/neat";
+
+#content {
+  @include display(flex);
+
+  padding-top: 3em;
+  padding-bottom: 3em;
+}
