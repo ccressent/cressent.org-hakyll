@@ -1,11 +1,14 @@
 <div class="article">
-  <div>
+  <div class="metadata">
+    <h1 class="title">$title$</h1>
+    <p class="date">
     Posted on $date$
-    $if(author)$
-        by $author$
+    $if(updated)$
+      <br /> Last updated on $updated$
     $endif$
+    </p>
   </div>
-  <div>
+  <div class="article-body">
     $body$
   </div>
 </div>

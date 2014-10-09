@@ -1,0 +1,125 @@
+@charset "UTF-8";
+
+@import "bourbon/bourbon";
+@import "base/base";
+@import "neat/neat";
+
+.article {
+  flex: 1;
+  margin: 0 auto;
+  max-width: 90%;
+
+  text-align: justify;
+
+  @include media($large-screen) {
+    max-width: 50%;
+  }
+
+  .metadata {
+    margin-bottom: 2em;
+    text-align: center;
+  }
+
+  .title {
+    text-transform: capitalize;
+  }
+
+  .date {
+    color: transparentize($base-font-color, .6);
+    font-family: $serif;
+    font-style: italic;
+    font-size: .9em;
+    margin-bottom: .3em;
+  }
+
+  h1 {
+    font-family: $serif;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: .5em;
+  }
+
+  h2 {
+    font-family: $serif;
+    font-size: 1.4em;
+    font-weight: 400;
+    line-height: 1.3em;
+    margin-bottom: .4em;
+  }
+
+  h3 {
+    font-family: $serif;
+    font-style: italic;
+    font-size: 1.2em;
+    font-weight: 400;
+    line-height: 1.4em;
+    margin-bottom: 1.1em;
+  }
+
+  p {
+    font-family: $sans-serif;
+    line-height: 1.5em;
+    font-size: 1.05em;
+    margin-bottom: 1.5em;
+  }
+
+  pre {
+    background: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: $base-border-radius * 1.5;
+    padding: .1em .4em;
+    font-style: normal;
+
+    .kw {
+      color: #007020;
+      font-weight: bold;
+    }
+
+    .dt {
+      color: #902000;
+    }
+
+    .dv {
+      color: #40a070;
+    }
+
+    .bn {
+      color: #40a070;
+    }
+
+    .fl {
+      color: #40a070;
+    }
+
+    .ch {
+      color: #4070a0;
+    }
+
+    .st {
+      color: #4070a0;
+    }
+
+    .co {
+      color: #60a0ba;
+      font-style: italic;
+    }
+
+    .ot {
+      color: #007020;
+    }
+
+    .al {
+      color: red;
+      font-weight: bold;
+    }
+
+    .fu {
+      color: #06287e;
+    }
+
+    .er {
+      color: red;
+      font-weight: bold;
+    }
+  }
+}
