@@ -6,6 +6,7 @@
 
 #content {
   @include display(flex);
+  @include justify-content(center);
 
   padding-top: 3em;
   padding-bottom: 3em;
