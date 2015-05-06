@@ -1,6 +1,7 @@
 ---
-title: Sample Article 1
+title: Modeling latency in application testing
 date: 2014-08-21
+updated: 2014-10-01
 ---
 
 Fusce tortor quam, egestas in posuere quis, porttitor vel turpis. Donec
@@ -9,6 +10,8 @@ Curabitur venenatis turpis sit amet purus tristique nec posuere risus laoreet.
 Nullam nisi sem, dapibus id semper id, egestas vel arcu. Morbi porttitor ipsum
 placerat erat consequat sed consequat purus feugiat. Donec auctor elit ut risus
 mattis facilisis. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+# Why test the influence of latency?
 
 Proin vulputate sapien facilisis leo ornare pulvinar. Fusce tempus massa a risus
 semper iaculis. Suspendisse sollicitudin posuere nunc, sit amet rutrum leo
@@ -22,6 +25,20 @@ tellus. Integer varius, elit ac gravida suscipit, eros erat pellentesque nisi,
 et tristique augue odio id nulla. Aliquam sit amet nunc vel tellus hendrerit
 tempus ac vel sem.
 
+## Some code
+
+```haskell
+import System.Environment (getArgs)
+
+-- Some simple program
+main :: IO ()
+main = do
+  args <- getArgs
+  map putStrLn args
+```
+
+
+# Current state of the art
 Aenean tincidunt sollicitudin sapien ut porttitor. Curabitur molestie adipiscing
 lorem vel scelerisque. Donec vitae interdum est. Proin rutrum vulputate
 faucibus. Suspendisse sit amet felis odio, non volutpat ante. Sed eu lectus
@@ -31,6 +48,8 @@ Praesent ultrices interdum commodo. Sed euismod nisl auctor leo ultrices rutrum.
 Aliquam nibh felis, congue molestie blandit at, bibendum at eros. Aenean
 tincidunt, tortor iaculis placerat sollicitudin, lorem justo tempor diam, et
 posuere sapien leo et magna. Quisque vel aliquam mauris.
+
+## Tools
 
 Proin varius tempus fermentum. Cum sociis natoque penatibus et magnis dis
 parturient montes, nascetur ridiculus mus. Sed tincidunt nunc id magna
