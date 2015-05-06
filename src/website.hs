@@ -33,9 +33,9 @@ main = hakyllWith config $ do
             items <- loadAll "styles/*"
             makeItem $ concatMap itemBody (items :: [Item String])
 
-    match "about.md" $ do
-        route   $ setExtension ".html"
-        compile $ pandocCompiler
+    match "about.html" $ do
+        route idRoute
+        compile $ getResourceBody
             >>= loadAndApplyTemplate "templates/main.html" defaultContext
             >>= relativizeUrls
 
