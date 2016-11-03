@@ -1,12 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Control.Monad (liftM, msum)
-import qualified Data.Map as M
 import Data.Monoid ((<>))
 import Data.Time.Clock (UTCTime)
-import Data.Time.Format (formatTime, parseTime)
+import Data.Time.Format (formatTime, parseTimeM, TimeLocale, defaultTimeLocale)
 import Hakyll
-import System.Locale (TimeLocale, defaultTimeLocale)
 
 
 main :: IO ()
@@ -106,12 +104,12 @@ updatedField key format = field key $ \i -> do
 getUpdatedTime :: MonadMetadata m => TimeLocale -> Identifier -> m UTCTime
 getUpdatedTime locale id' = do
     metadata <- getMetadata id'
-    let tryField k fmt = M.lookup k metadata >>= parseTime' fmt
+    let tryField k fmt = lookupString k metadata >>= parseTime' fmt
     maybe empty' return $ msum [tryField "updated" fmt | fmt <- formats]
   where
     empty' = fail $ "getUpdatedTime: " ++ "could not parse time for " ++
                     show id'
-    parseTime' = parseTime locale
+    parseTime' = parseTimeM True locale
     formats =
         [ "%a, %d %b %Y %H:%M:%S %Z"
         , "%Y-%m-%dT%H:%M:%S%Z"
