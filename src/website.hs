@@ -80,6 +80,7 @@ articleCtx :: Context String
 articleCtx =
     dateField "date" "%B %e, %Y"
  <> updatedField "updated" "%B %e, %Y"
+ <> readingTimeField "reading_time"
  <> defaultContext
 
 
@@ -119,3 +120,17 @@ getUpdatedTime locale id' = do
         , "%B %e, %Y"
         , "%b %d, %Y"
         ]
+
+-- Average reader reading speed, in words per minute
+averageReadingSpeed :: Int
+averageReadingSpeed = 200
+
+wordCount :: String -> Int
+wordCount = length . words
+
+-- Time, in minutes, for an average reader to read the item
+readingTimeField :: String -> Context String
+readingTimeField key = field key $ \i -> do
+    let wc = wordCount (itemBody i)
+    return $ show $ div wc averageReadingSpeed
+
