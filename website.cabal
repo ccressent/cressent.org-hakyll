@@ -1,22 +1,38 @@
-name:                website
-synopsis:            Build system and source files for https://cressent.org
-version:             0.1.0.0
-cabal-version:       >=1.10
-author:              Cyril Cressent
-maintainer:          cyril@cressent.org
-license:             MIT
-license-file:        LICENSE
-homepage:            https://github.com/ccressent/cressent.org
-bug-reports:         https://github.com/ccressent/cressent.org/issues
-build-type:          Simple
-extra-tmp-files:     _cache,
-                     _site
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: f645a72e353a81a61fc009e76d4733a3cbba2e82e1cec87bc49ce11326aafb7d
+
+name:           website
+version:        0.1.0.0
+synopsis:       Build system and source files for https://cressent.org
+homepage:       https://github.com/ccressent/cressent.org
+bug-reports:    https://github.com/ccressent/cressent.org/issues
+author:         Cyril Cressent
+maintainer:     cyril@cressent.org
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
 executable website
-  main-is:             website.hs
-  hs-source-dirs:      src
-  build-depends:       base == 4.*,
-                       hakyll == 4.9.*,
-                       time
-  ghc-options:         -threaded -O2 -Wall
-  default-language:    Haskell2010
+  main-is: website.hs
+  other-modules:
+      Paths_website
+  hs-source-dirs:
+      src
+  ghc-options: -threaded -O2 -Wall
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , containers
+    , lens
+    , lens-aeson
+    , mustache
+    , pandoc
+    , shake
+    , slick
+    , text
+    , time
+  default-language: Haskell2010

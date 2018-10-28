@@ -1,136 +1,130 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
-import Control.Monad (liftM, msum)
-import Data.Monoid ((<>))
-import Data.Time.Clock (UTCTime)
-import Data.Time.Format (formatTime, parseTimeM, TimeLocale, defaultTimeLocale)
-import Hakyll
+module Main where
 
+import Control.Lens
+import Data.Aeson as A
+import Data.Aeson.Lens
+import Data.Function (on)
+import Data.List (sortBy)
+import Data.Map as M
+import Data.Monoid
+import Data.Set as S
+import qualified Data.Text as T
+import Data.Text.Lens
+-- import Data.Time
+import Development.Shake
+import Development.Shake.Classes
+import Development.Shake.FilePath
+import GHC.Generics (Generic)
+import Slick
 
 main :: IO ()
-main = hakyllWith config $ do
-    match "templates/*" $ compile templateCompiler
+main =
+  shakeArgs shakeOptions {shakeVerbosity = Chatty} $
+    -- Set up caches
+   do
+    postCache <- jsonCache' loadPost
+    -- Require all the things we need to build the whole site
+    "site" ~> need ["static", "posts", "dist/index.html"]
+    -- Require all static assets
+    "static" ~> do
+      staticFiles <-
+        getDirectoryFiles "." ["site/css//*", "site/js//*", "site/images//*"]
+      need (("dist" </>) . dropDirectory1 <$> staticFiles)
+    -- Rule for handling static assets, just copy them from source to dest
+    ["dist/css//*", "dist/js//*", "dist/images//*"] |%> \out -> do
+      copyFileChanged ("site" </> dropDirectory1 out) out
+     -- Find and require every post to be built
+    "posts" ~> requirePosts
+    -- build the main table of contents
+    "dist/index.html" %> buildIndex postCache
+     -- rule for actually building posts
+    "dist/posts//*.html" %> buildPost postCache
 
-    match (fromList staticFiles) $ do
-        route   idRoute
-        compile copyFileCompiler
+-- | Represents the template dependencies of the index page
+data IndexInfo = IndexInfo
+  { posts :: [Post]
+  } deriving (Generic, Show)
 
-    match "images/**" $ do
-        route   idRoute
-        compile copyFileCompiler
+instance FromJSON IndexInfo
 
-    match "fonts/*" $ do
-        route   idRoute
-        compile copyFileCompiler
+instance ToJSON IndexInfo
 
-    match "styles/*" $
-        compile $ liftM (fmap compressCss) $
-            getResourceFilePath
-            >>= \fp -> unixFilter "sass" ["--scss", fp] ""
-            >>= makeItem
+-- | A JSON serializable representation of a post's metadata
+data Post = Post
+  { title :: String
+  , author :: String
+  , content :: String
+  , url :: String
+  , date :: String
+  , image :: Maybe String
+  } deriving (Generic, Eq, Ord, Show)
 
-    create ["styles.css"] $ do
-        route idRoute
-        compile $ do
-            items <- loadAll "styles/*"
-            makeItem $ concatMap itemBody (items :: [Item String])
+instance FromJSON Post
 
-    match "about.html" $ do
-        route idRoute
-        compile $ getResourceBody
-            >>= loadAndApplyTemplate "templates/main.html" defaultContext
-            >>= relativizeUrls
-
-    match "home.html" $ do
-        route idRoute
-        compile $ getResourceBody
-            >>= loadAndApplyTemplate "templates/main.html" defaultContext
-            >>= relativizeUrls
-
-    match "articles/*" $ do
-        route $ setExtension ".html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/article.html" articleCtx
-            >>= loadAndApplyTemplate "templates/main.html" articleCtx
-            >>= relativizeUrls
-
-    create ["articles.html"] $ do
-        route idRoute
-        compile $ do
-            articles <- recentFirst =<< loadAll "articles/*"
-            let context =
-                    listField "articles" articleCtx (return articles)
-                 <> constField "title" "Articles"
-                 <> defaultContext
-
-            makeItem ""
-                >>= loadAndApplyTemplate "templates/article-list.html" context
-                >>= loadAndApplyTemplate "templates/main.html" context
-                >>= relativizeUrls
+instance ToJSON Post
 
 
-staticFiles :: [Identifier]
-staticFiles = [ ".htaccess"
-              , "404.html"
-              , "favicon.ico"
-              ]
+-- A simple wrapper data-type which implements 'ShakeValue'; 
+-- Used as a Shake Cache key to build a cache of post objects.
+newtype PostFilePath =
+  PostFilePath String
+  deriving (Show, Eq, Hashable, Binary, NFData)
 
+-- | Discover all available post source files
+postNames :: Action [FilePath]
+postNames = getDirectoryFiles "." ["site/posts//*.md"]
 
-articleCtx :: Context String
-articleCtx =
-    dateField "date" "%B %e, %Y"
- <> updatedField "updated" "%B %e, %Y"
- <> readingTimeField "reading_time"
- <> defaultContext
+-- | convert 'build' filepaths into source file filepaths
+destToSrc :: FilePath -> FilePath
+destToSrc p = "site" </> dropDirectory1 p
 
+-- | convert source filepaths into build filepaths
+srcToDest :: FilePath -> FilePath
+srcToDest p = "dist" </> dropDirectory1 p
 
-config :: Configuration
-config = defaultConfiguration
-    { providerDirectory = "src/"
-    , ignoreFile        = const False
-    , deployCommand     = "echo 'No deploy command specified' && exit 1"
-    }
+-- | convert a source file path into a URL
+srcToURL :: FilePath -> String
+srcToURL = ("/" ++) . dropDirectory1 . (-<.> ".html")
 
+-- | Given a post source-file's file path as a cache key, load the Post object
+-- for it. This is used with 'jsonCache' to provide post caching.
+loadPost :: PostFilePath -> Action Post
+loadPost (PostFilePath postPath) = do
+  let srcPath = destToSrc postPath -<.> "md"
+  postData <- readFile' srcPath >>= markdownToHTML . T.pack
+  let postURL = T.pack . srcToURL $ postPath
+      withURL = _Object . at "url" ?~ String postURL
+      withSrc = _Object . at "srcPath" ?~ String (T.pack srcPath)
+  convert . withSrc . withURL $ postData
 
--- An "updated" datetime field that can be explicitely put in the document's
--- metadata.
--- Thanks to http://david.sferruzza.fr/posts/2014-06-18-new-blog-with-hakyll.html
-updatedField :: String -> String -> Context a
-updatedField key format = field key $ \i -> do
-    time <- getUpdatedTime locale $ itemIdentifier i
-    return $ formatTime locale format time
-  where
-    locale = defaultTimeLocale
+-- | given a cache of posts this will build a table of contents
+buildIndex :: (PostFilePath -> Action Post) -> FilePath -> Action ()
+buildIndex postCache out = do
+  posts <- postNames >>= traverse (postCache . PostFilePath)
+  indexT <- compileTemplate' "site/templates/index.html"
+  let indexInfo = IndexInfo {posts}
+      indexHTML = T.unpack $ substitute indexT (toJSON indexInfo)
+  writeFile' out indexHTML
 
-getUpdatedTime :: MonadMetadata m => TimeLocale -> Identifier -> m UTCTime
-getUpdatedTime locale id' = do
-    metadata <- getMetadata id'
-    let tryField k fmt = lookupString k metadata >>= parseTime' fmt
-    maybe empty' return $ msum [tryField "updated" fmt | fmt <- formats]
-  where
-    empty' = fail $ "getUpdatedTime: " ++ "could not parse time for " ++
-                    show id'
-    parseTime' = parseTimeM True locale
-    formats =
-        [ "%a, %d %b %Y %H:%M:%S %Z"
-        , "%Y-%m-%dT%H:%M:%S%Z"
-        , "%Y-%m-%d %H:%M:%S%Z"
-        , "%Y-%m-%d"
-        , "%B %e, %Y %l:%M %p"
-        , "%B %e, %Y"
-        , "%b %d, %Y"
-        ]
+-- | Find all post source files and tell shake to build the corresponding html
+-- pages.
+requirePosts :: Action ()
+requirePosts = do
+  pNames <- postNames
+  need ((\p -> srcToDest p -<.> "html") <$> pNames)
 
--- Average reader reading speed, in words per minute
-averageReadingSpeed :: Int
-averageReadingSpeed = 200
-
-wordCount :: String -> Int
-wordCount = length . words
-
--- Time, in minutes, for an average reader to read the item
-readingTimeField :: String -> Context String
-readingTimeField key = field key $ \i -> do
-    let wc = wordCount (itemBody i)
-    return $ show $ div wc averageReadingSpeed
-
+-- Build an html file for a given post given a cache of posts.
+buildPost :: (PostFilePath -> Action Post) -> FilePath -> Action ()
+buildPost postCache out = do
+  let srcPath = destToSrc out -<.> "md"
+      -- postURL = srcToURL srcPath
+  post <- postCache (PostFilePath srcPath)
+  template <- compileTemplate' "site/templates/post.html"
+  writeFile' out . T.unpack $ substitute template (toJSON post)
